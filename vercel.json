@@ -1,13 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build && cd ../server && npm install",
+  "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build && cd ../server && npm install --production=false",
   "outputDirectory": "client/dist",
-  "installCommand": "echo 'Installing dependencies in subdirectories'",
+  "installCommand": "echo 'Installing dependencies - v1.0.1'",
   "framework": null,
   "functions": {
     "api/server.js": {
       "memory": 1024,
-      "maxDuration": 10
+      "maxDuration": 10,
+      "includeFiles": "server/**"
     }
   },
   "rewrites": [

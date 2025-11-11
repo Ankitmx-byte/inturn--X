@@ -101,12 +101,18 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'InturnX Server is running on Vercel',
+    version: '1.0.1-oauth-fix',
     timestamp: new Date().toISOString(),
     env: {
       nodeEnv: process.env.NODE_ENV,
       hasMongoUri: !!process.env.MONGODB_URI,
       hasJwtSecret: !!process.env.JWT_SECRET,
       hasSessionSecret: !!process.env.SESSION_SECRET
+    },
+    oauth: {
+      github: !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET),
+      google: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+      linkedin: !!(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET)
     }
   });
 });
