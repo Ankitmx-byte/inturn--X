@@ -1,13 +1,34 @@
-// Vercel serverless function entry point for the backend
-const path = require('path');
+// Vercel serverless function entry point
+// This wraps the Express app for Vercel's serverless environment
 
-// Set the correct path for server modules
-process.env.NODE_PATH = path.join(__dirname, '../server/node_modules');
-require('module').Module._initPaths();
+let app;
 
-// Load the server API handler
-const app = require('../server/api/index.js');
+// Lazy load the Express app
+function getApp() {
+  if (!app) {
+    try {
+      // Try to load the Express app
+      app = require('../server/api/index.js');
+    } catch (error) {
+      console.error('Error loading Express app:', error);
+      throw error;
+    }
+  }
+  return app;
+}
 
-// Export for Vercel
-module.exports = app;
+// Export handler for Vercel
+module.exports = async (req, res) => {
+  try {
+    const expressApp = getApp();
+    return expressApp(req, res);
+  } catch (error) {
+    console.error('Serverless function error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+};
 
