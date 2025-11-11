@@ -84,8 +84,8 @@ app.use(passport.session());
 
 // Ensure DB connection before handling requests (non-blocking for health check)
 app.use(async (req, res, next) => {
-  // Skip DB connection for health check to avoid timeout
-  if (req.path === '/api/health' || req.path === '/health') {
+  // Skip DB connection for health check and debug routes to avoid timeout
+  if (req.path === '/health' || req.path === '/debug/routes') {
     return next();
   }
 
@@ -98,25 +98,25 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/courses', coursesRoutes);
-app.use('/api/battles', battlesRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/projects', projectsRoutes);
-app.use('/api/internships', internshipsRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/quiz', quizRoutes);
-app.use('/api/code', codeRoutes);
-app.use('/api/leaderboard', leaderboardRoutes);
+// Routes - Note: Vercel routes /api/* to this function, so we don't need /api prefix here
+app.use('/auth', authRoutes);
+app.use('/courses', coursesRoutes);
+app.use('/battles', battlesRoutes);
+app.use('/ai', aiRoutes);
+app.use('/projects', projectsRoutes);
+app.use('/internships', internshipsRoutes);
+app.use('/admin', adminRoutes);
+app.use('/users', usersRoutes);
+app.use('/quiz', quizRoutes);
+app.use('/code', codeRoutes);
+app.use('/leaderboard', leaderboardRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'InturnX Server is running on Vercel',
-    version: '1.0.3-route-debug',
+    version: '1.0.4-routing-fix',
     timestamp: new Date().toISOString(),
     env: {
       nodeEnv: process.env.NODE_ENV,
@@ -133,7 +133,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Debug endpoint to list all routes
-app.get('/api/debug/routes', (req, res) => {
+app.get('/debug/routes', (req, res) => {
   const routes = [];
   app._router.stack.forEach((middleware) => {
     if (middleware.route) {
