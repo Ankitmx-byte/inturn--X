@@ -29,18 +29,28 @@ const app = express();
 
 // Connect to database (with connection pooling for serverless)
 let dbConnected = false;
+let dbConnectionPromise = null;
+
 const ensureDbConnection = async () => {
-  if (!dbConnected) {
-    try {
-      await connectDB();
-      dbConnected = true;
-      console.log('Database connected successfully');
-    } catch (error) {
-      console.error('Database connection error:', error.message);
-      // Don't throw - allow app to start even if DB fails
-      // Individual routes can handle DB errors
-    }
+  if (dbConnected) {
+    return true;
   }
+
+  if (!dbConnectionPromise) {
+    dbConnectionPromise = connectDB()
+      .then(() => {
+        dbConnected = true;
+        console.log('Database connected successfully');
+        return true;
+      })
+      .catch((error) => {
+        console.error('Database connection error:', error.message);
+        dbConnectionPromise = null; // Reset so it can retry
+        return false;
+      });
+  }
+
+  return dbConnectionPromise;
 };
 
 // Middleware
@@ -72,8 +82,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Ensure DB connection before handling requests
+// Ensure DB connection before handling requests (non-blocking for health check)
 app.use(async (req, res, next) => {
+  // Skip DB connection for health check to avoid timeout
+  if (req.path === '/api/health' || req.path === '/health') {
+    return next();
+  }
+
   try {
     await ensureDbConnection();
     next();
@@ -101,7 +116,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'InturnX Server is running on Vercel',
-    version: '1.0.1-oauth-fix',
+    version: '1.0.2-timeout-fix',
     timestamp: new Date().toISOString(),
     env: {
       nodeEnv: process.env.NODE_ENV,
