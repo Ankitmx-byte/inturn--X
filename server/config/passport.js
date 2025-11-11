@@ -27,7 +27,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
   passport.use(new GitHubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: `${process.env.SERVER_URL || 'http://localhost:3001'}/api/auth/github/callback`
+        callbackURL: `${process.env.CLIENT_URL || 'http://localhost:5173'}/api/auth/github/callback`
       },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -80,7 +80,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.SERVER_URL || 'http://localhost:3001'}/api/auth/google/callback`
+      callbackURL: `${process.env.CLIENT_URL || 'http://localhost:5173'}/api/auth/google/callback`
     },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -131,7 +131,7 @@ if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET) {
   passport.use(new LinkedInStrategy({
       clientID: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-      callbackURL: `${process.env.SERVER_URL || 'http://localhost:3001'}/api/auth/linkedin/callback`,
+      callbackURL: `${process.env.CLIENT_URL || 'http://localhost:5173'}/api/auth/linkedin/callback`,
       scope: ['r_emailaddress', 'r_liteprofile'],
       state: true,
     },
