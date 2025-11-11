@@ -23,55 +23,57 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // GitHub Strategy (only if credentials provided)
-passport.use(new GitHubStrategy({
-      clientID: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: `${process.env.SERVER_URL || 'http://localhost:3001'}/api/auth/github/callback`
-    },
-  async (accessToken, refreshToken, profile, done) => {
-    try {
-      // Check if user already exists
-      let user = await User.findOne({ githubId: profile.id });
-
-      if (user) {
-        return done(null, user);
-      }
-
-      // Check if user exists with same email
-      const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
-      if (email) {
-        user = await User.findOne({ email });
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  passport.use(new GitHubStrategy({
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        callbackURL: `${process.env.SERVER_URL || 'http://localhost:3001'}/api/auth/github/callback`
+      },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        // Check if user already exists
+        let user = await User.findOne({ githubId: profile.id });
 
         if (user) {
-          // Link GitHub account to existing user
-          user.githubId = profile.id;
-          user.oauthProvider = 'github';
-          await user.save();
           return done(null, user);
         }
+
+        // Check if user exists with same email
+        const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+        if (email) {
+          user = await User.findOne({ email });
+
+          if (user) {
+            // Link GitHub account to existing user
+            user.githubId = profile.id;
+            user.oauthProvider = 'github';
+            await user.save();
+            return done(null, user);
+          }
+        }
+
+        // Create new user
+        const avatar = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
+        const newUser = new User({
+          name: profile.displayName || profile.username,
+          email: email,
+          githubId: profile.id,
+          oauthProvider: 'github',
+          role: 'student',
+          avatar: avatar,
+          github: profile.profileUrl,
+          skills: [],
+          badges: ['GitHub User']
+        });
+
+        await newUser.save();
+        return done(null, newUser);
+      } catch (error) {
+        return done(error, null);
       }
-
-      // Create new user
-      const avatar = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
-      const newUser = new User({
-        name: profile.displayName || profile.username,
-        email: email,
-        githubId: profile.id,
-        oauthProvider: 'github',
-        role: 'student',
-        avatar: avatar,
-        github: profile.profileUrl,
-        skills: [],
-        badges: ['GitHub User']
-      });
-
-      await newUser.save();
-      return done(null, newUser);
-    } catch (error) {
-      return done(error, null);
     }
-  }
-));
+  ));
+}
 
 // Google Strategy (only if credentials provided)
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
