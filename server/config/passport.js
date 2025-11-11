@@ -24,10 +24,13 @@ passport.deserializeUser(async (id, done) => {
 
 // GitHub Strategy (only if credentials provided)
 if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  const githubCallbackURL = process.env.GITHUB_CALLBACK_URL ||
+                            `${process.env.CLIENT_URL || 'https://inturn-x.vercel.app'}/api/auth/github/callback`;
+
   passport.use(new GitHubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: `${process.env.CLIENT_URL || 'http://localhost:5173'}/api/auth/github/callback`
+        callbackURL: githubCallbackURL
       },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -77,10 +80,13 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 
 // Google Strategy (only if credentials provided)
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  const googleCallbackURL = process.env.GOOGLE_CALLBACK_URL ||
+                            `${process.env.CLIENT_URL || 'https://inturn-x.vercel.app'}/api/auth/google/callback`;
+
   passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.CLIENT_URL || 'http://localhost:5173'}/api/auth/google/callback`
+      callbackURL: googleCallbackURL
     },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -128,10 +134,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 // LinkedIn Strategy (only if credentials provided)
 if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET) {
+  const linkedinCallbackURL = process.env.LINKEDIN_CALLBACK_URL ||
+                              `${process.env.CLIENT_URL || 'https://inturn-x.vercel.app'}/api/auth/linkedin/callback`;
+
   passport.use(new LinkedInStrategy({
       clientID: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-      callbackURL: `${process.env.CLIENT_URL || 'http://localhost:5173'}/api/auth/linkedin/callback`,
+      callbackURL: linkedinCallbackURL,
       scope: ['r_emailaddress', 'r_liteprofile'],
       state: true,
     },
