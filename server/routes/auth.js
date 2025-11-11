@@ -57,28 +57,37 @@ router.get('/oauth/available', (req, res) => {
   });
 });
 
-// OAuth routes - only register if credentials are configured
+// OAuth routes - always register routes, check credentials inside handlers
 // GitHub OAuth
-if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-  router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
-  router.get('/github/callback',
-    passport.authenticate('github', { failureRedirect: '/login' }),
-    (req, res) => {
-      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET || 'your-secret-key', {
+router.get('/github', (req, res, next) => {
+  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+    passport.authenticate('github', { scope: ['user:email'] })(req, res, next);
+  } else {
+    res.status(501).json({ error: 'GitHub OAuth is not configured' });
+  }
+});
+
+router.get('/github/callback', (req, res, next) => {
+  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+    passport.authenticate('github', { failureRedirect: '/login' }, (err, user, info) => {
+      if (err) {
+        console.error('GitHub OAuth error:', err);
+        return res.status(500).json({ error: 'Authentication failed', details: err.message });
+      }
+      if (!user) {
+        console.error('GitHub OAuth: No user returned', info);
+        return res.redirect('/login?error=oauth_failed');
+      }
+
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'your-secret-key', {
         expiresIn: '7d'
       });
-      res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/auth/callback?token=${token}&provider=github`);
-    }
-  );
-} else {
-  // Return error if OAuth not configured
-  router.get('/github', (req, res) => {
+      res.redirect(`${process.env.CLIENT_URL || 'https://inturn-x.vercel.app'}/auth/callback?token=${token}&provider=github`);
+    })(req, res, next);
+  } else {
     res.status(501).json({ error: 'GitHub OAuth is not configured' });
-  });
-  router.get('/github/callback', (req, res) => {
-    res.status(501).json({ error: 'GitHub OAuth is not configured' });
-  });
-}
+  }
+});
 
 // Google OAuth
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
