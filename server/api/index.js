@@ -116,7 +116,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'InturnX Server is running on Vercel',
-    version: '1.0.5-vercel-routing-fix',
+    version: '1.1.0-fresh-deployment',
     timestamp: new Date().toISOString(),
     env: {
       nodeEnv: process.env.NODE_ENV,
