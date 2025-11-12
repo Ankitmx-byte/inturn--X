@@ -15,6 +15,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/server"
+    },
+    {
+      "source": "/((?!api|.*\\..*).*)",
+      "destination": "/"
     }
   ]
 }
