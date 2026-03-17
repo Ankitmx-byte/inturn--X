@@ -3,6 +3,154 @@ const router = express.Router();
 const Battle = require('../models/Battle');
 const BattleResult = require('../models/BattleResult');
 const { auth } = require('../middleware/auth');
+const { problems } = require('../problems');
+const judge0Service = require('../services/judge0Service');
+
+// Get practice problem
+router.get('/practice', auth, async (req, res) => {
+  try {
+    const { difficulty, topic } = req.query;
+
+    // Filter problems by difficulty
+    let filteredProblems = problems;
+    
+    if (difficulty) {
+      const difficultyMap = {
+        'easy': 'Easy',
+        'medium': 'Medium',
+        'hard': 'Hard'
+      };
+      filteredProblems = filteredProblems.filter(p => 
+        p.difficulty === difficultyMap[difficulty.toLowerCase()]
+      );
+    }
+
+    // Filter by topic/category if provided
+    if (topic) {
+      filteredProblems = filteredProblems.filter(p => 
+        p.category.toLowerCase() === topic.toLowerCase()
+      );
+    }
+
+    // Select a random problem from filtered list
+    if (filteredProblems.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No problems found matching the criteria'
+      });
+    }
+
+    const randomIndex = Math.floor(Math.random() * filteredProblems.length);
+    const problem = filteredProblems[randomIndex];
+
+    res.json({
+      success: true,
+      problem
+    });
+
+  } catch (error) {
+    console.error('Error fetching practice problem:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch practice problem'
+    });
+  }
+});
+
+// Submit practice solution
+router.post('/practice/submit', auth, async (req, res) => {
+  try {
+    const { problemId, code, language } = req.body;
+    const userId = req.user.id;
+
+    if (!problemId || !code || !language) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields'
+      });
+    }
+
+    // Find the problem
+    const problem = problems.find(p => p.id === problemId);
+    if (!problem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Problem not found'
+      });
+    }
+
+    // Execute code and run test cases using Judge0
+    try {
+      const testCases = problem.testCases || [];
+      if (testCases.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'No test cases available for this problem'
+        });
+      }
+
+      // Prepare test cases for Judge0 - limit to first 3 test cases for practice mode
+      const limitedTestCases = testCases.slice(0, 3);
+      const judge0TestCases = limitedTestCases.map(tc => ({
+        input: Array.isArray(tc.input) ? tc.input.join(' ') : tc.input.toString(),
+        expectedOutput: tc.expectedOutput.toString()
+      }));
+
+      // Execute code with test cases
+      const executionResult = await judge0Service.executeWithTestCases(
+        code,
+        language,
+        judge0TestCases,
+        'battle' // context
+      );
+
+      const result = {
+        success: executionResult.allPassed,
+        passed: executionResult.allPassed,
+        testsPassed: executionResult.passedCount,
+        totalTests: limitedTestCases.length,
+        executionTime: parseFloat(executionResult.totalTime),
+        memoryUsed: executionResult.avgMemory,
+        message: executionResult.allPassed ? 'All test cases passed!' : `${executionResult.failedCount} test case(s) failed`,
+        testResults: executionResult.results
+      };
+
+      res.json({
+        success: true,
+        result,
+        problem: {
+          id: problem.id,
+          title: problem.title,
+          difficulty: problem.difficulty
+        }
+      });
+
+    } catch (executionError) {
+      console.error('Code execution error:', executionError);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to execute code: ' + executionError.message,
+        result: {
+          success: false,
+          passed: false,
+          testsPassed: 0,
+          totalTests: problem.testCases?.length || 0,
+          executionTime: 0,
+          memoryUsed: 0,
+          message: 'Code execution failed',
+          error: executionError.message
+        }
+      });
+    }
+
+  } catch (error) {
+    console.error('Error submitting practice solution:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit practice solution'
+    });
+  }
+});
 
 // Get leaderboard
 router.get('/leaderboard', auth, async (req, res) => {

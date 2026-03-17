@@ -55,7 +55,7 @@ export default function Login() {
         {/* OAuth Buttons */}
         <div className="space-y-3 mb-6">
           <button
-            onClick={() => window.location.href = '/api/auth/github'}
+            onClick={() => { const API = (import.meta.env.VITE_API_URL || 'http://localhost:3001'); window.location.href = `${API}/api/auth/github`; }}
             className="w-full py-3 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ export default function Login() {
           </button>
 
           <button
-            onClick={() => window.location.href = '/api/auth/google'}
+            onClick={() => { const API = (import.meta.env.VITE_API_URL || 'http://localhost:3001'); window.location.href = `${API}/api/auth/google`; }}
             className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@ export default function Login() {
           </button>
 
           <button
-            onClick={() => window.location.href = '/api/auth/linkedin'}
+            onClick={() => { const API = (import.meta.env.VITE_API_URL || 'http://localhost:3001'); window.location.href = `${API}/api/auth/linkedin`; }}
             className="w-full py-3 bg-blue-800 text-white rounded-xl font-semibold hover:bg-blue-900 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

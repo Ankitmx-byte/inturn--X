@@ -49,9 +49,63 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Certificate'
   }],
+  uploadedCertificates: [{
+    name: String,
+    fileUrl: String,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   resumeLink: {
     type: String,
     default: ''
+  },
+  resumeData: {
+    personalInfo: {
+      fullName: String,
+      email: String,
+      phone: String,
+      location: String,
+      summary: String
+    },
+    education: [{
+      institution: String,
+      degree: String,
+      field: String,
+      startDate: Date,
+      endDate: Date,
+      current: Boolean,
+      description: String
+    }],
+    experience: [{
+      company: String,
+      position: String,
+      location: String,
+      startDate: Date,
+      endDate: Date,
+      current: Boolean,
+      description: String
+    }],
+    projects: [{
+      name: String,
+      description: String,
+      technologies: [String],
+      link: String,
+      startDate: Date,
+      endDate: Date
+    }],
+    skills: [{
+      category: String,
+      items: [String]
+    }],
+    certifications: [{
+      name: String,
+      issuer: String,
+      date: Date,
+      credentialId: String,
+      link: String
+    }]
   },
   bio: {
     type: String,
@@ -136,6 +190,35 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Master', 'Grandmaster'],
     default: 'Beginner'
+  },
+  // Activity tracking
+  lastActive: {
+    type: Date,
+    default: Date.now
+  },
+  activityLog: [{
+    type: {
+      type: String,
+      enum: ['course_completed', 'project_submitted', 'battle_won', 'quiz_completed', 'login']
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    metadata: mongoose.Schema.Types.Mixed
+  }],
+  // Learning streak
+  streakDays: {
+    type: Number,
+    default: 0
+  },
+  lastStreakDate: {
+    type: Date
+  },
+  // Time tracking
+  totalTimeSpent: {
+    type: Number,
+    default: 0 // in hours
   }
 }, {
   timestamps: true

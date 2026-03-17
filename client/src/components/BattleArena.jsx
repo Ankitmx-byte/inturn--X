@@ -75,7 +75,7 @@ const BattleArena = () => {
       setQueueStatus(data);
     });
 
-    newSocket.on('match-found', (data) => {
+    newSocket.on('match-found', async (data) => {
       setQueueStatus(null);
       setBattleState({
         battleId: data.battleId,
@@ -88,6 +88,13 @@ const BattleArena = () => {
       setTimeLeft(data.timeLimit);
       setCode(data.problem.languages?.[language]?.template || '');
       startTimer(data.timeLimit);
+      
+      // Enable anti-cheat for 1v1 battle
+      if (antiCheatSystem && antiCheatSystem.enable) {
+        await antiCheatSystem.enable();
+        setAntiCheatEnabled(true);
+        console.log('Anti-cheat enabled for 1v1 battle');
+      }
     });
 
     // Battle events
@@ -113,6 +120,13 @@ const BattleArena = () => {
       setShowResultModal(true);
       setBattleState(prev => ({ ...prev, status: 'completed' }));
       clearInterval(timerRef.current);
+      
+      // Disable anti-cheat when battle ends
+      if (antiCheatSystem && antiCheatSystem.disable) {
+        antiCheatSystem.disable();
+        setAntiCheatEnabled(false);
+        console.log('Anti-cheat disabled - battle ended');
+      }
     });
 
     // Anti-cheat events (for debugging - not shown to users)
@@ -259,6 +273,13 @@ const BattleArena = () => {
       setPracticeProblem(response.data.problem);
       setCode(response.data.problem.languages?.[language]?.template || '');
       setActiveTab('practice'); // Stay on practice tab
+      
+      // Enable anti-cheat for practice mode
+      if (antiCheatSystem && antiCheatSystem.enable) {
+        await antiCheatSystem.enable();
+        setAntiCheatEnabled(true);
+        console.log('Anti-cheat enabled for practice mode');
+      }
     } catch (error) {
       console.error('Error starting practice:', error);
     } finally {
@@ -281,6 +302,13 @@ const BattleArena = () => {
       // Handle practice result
       console.log('Practice submission result:', response.data);
       // You can add a modal or notification here for practice results
+      
+      // Disable anti-cheat after submission
+      if (antiCheatSystem && antiCheatSystem.disable) {
+        antiCheatSystem.disable();
+        setAntiCheatEnabled(false);
+        console.log('Anti-cheat disabled after practice submission');
+      }
     } catch (error) {
       console.error('Error submitting practice solution:', error);
     } finally {
@@ -457,6 +485,16 @@ const BattleArena = () => {
 
                 {/* Code Editor Section */}
                 <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
+                  {/* Anti-Cheat Status Indicator */}
+                  {antiCheatEnabled && (
+                    <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm text-green-400 font-medium">
+                        🛡️ Anti-Cheat Active - Your session is being monitored
+                      </span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold">Code Editor</h3>
                     <select
@@ -580,6 +618,13 @@ const BattleArena = () => {
                       setPracticeProblem(null);
                       setCode('');
                       setPracticeDifficulty(null);
+                      
+                      // Disable anti-cheat when exiting practice
+                      if (antiCheatSystem && antiCheatSystem.disable) {
+                        antiCheatSystem.disable();
+                        setAntiCheatEnabled(false);
+                        console.log('Anti-cheat disabled - exited practice mode');
+                      }
                     }}
                     className="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
                   >
@@ -626,6 +671,16 @@ const BattleArena = () => {
 
                   {/* Code Editor Section */}
                   <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
+                    {/* Anti-Cheat Status Indicator */}
+                    {antiCheatEnabled && (
+                      <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-sm text-green-400 font-medium">
+                          🛡️ Anti-Cheat Active - Your session is being monitored
+                        </span>
+                      </div>
+                    )}
+                    
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-bold">Code Editor</h3>
                       <select

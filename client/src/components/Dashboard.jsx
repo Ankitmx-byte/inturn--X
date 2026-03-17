@@ -128,24 +128,26 @@ const Dashboard = () => {
         // Fetch user stats, recommendations, and recent activities
         const [statsResponse, recommendationsResponse, recentActivityResponse] = await Promise.all([
           axios.get('/api/auth/profile'),
-          axios.get('/api/ai/recommend'),
-          axios.get('/api/users/recent-activity') // This endpoint needs to be created
+          axios.get('/api/ai/recommend').catch(() => ({ data: { recommendations: [] } })),
+          axios.get('/api/users/recent-activity').catch(() => ({ data: { activities: [] } }))
         ]);
 
+        const userData = statsResponse.data.user;
+
         setStats({
-          xp: statsResponse.data.user.xp || 0,
-          completedCourses: statsResponse.data.user.completedCourses?.length || 0,
-          badges: statsResponse.data.user.badges || [],
+          xp: userData.xp || 0,
+          completedCourses: userData.completedCourses?.length || 0,
+          badges: userData.badges || [],
           recommendations: recommendationsResponse.data.recommendations || [],
-          totalProjects: statsResponse.data.user.projects?.length || 0,
-          internshipsApplied: statsResponse.data.user.internshipApplications?.length || 0,
-          quizScore: statsResponse.data.user.quizScore || Math.floor(Math.random() * 40) + 60,
-          battlesWon: statsResponse.data.user.battleWins || Math.floor(Math.random() * 25),
-          streakDays: statsResponse.data.user.streakDays || Math.floor(Math.random() * 30) + 1,
-          timeSpent: statsResponse.data.user.timeSpent || Math.floor(Math.random() * 500) + 100
+          totalProjects: userData.totalProjects || 0,
+          internshipsApplied: userData.internshipApplications?.length || 0,
+          quizScore: userData.quizScore || 0,
+          battlesWon: userData.battleWins || 0,
+          streakDays: userData.streakDays || 0,
+          timeSpent: userData.timeSpent || 0
         });
 
-        setRecentActivities(recentActivityResponse.data.activities);
+        setRecentActivities(recentActivityResponse.data.activities || []);
 
         // Generate mock upcoming deadlines (can be replaced with real data later)
         setUpcomingDeadlines([
@@ -515,7 +517,7 @@ const Dashboard = () => {
           </Link>
 
           <Link
-            to="/mock-interview"
+            to="/mock-interview/start"
             className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl hover:bg-white/15 transition-all duration-300 transform hover:scale-105 hover:shadow-[#FF8E53]/20 group"
           >
             <div className="text-center">

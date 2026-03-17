@@ -32,6 +32,32 @@ const uploadResume = multer({
   }
 });
 
+// Configure multer for certificate uploads
+const certificateStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/certificates/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, req.user.id + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const uploadCertificate = multer({
+  storage: certificateStorage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF and image files are allowed!'), false);
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+});
+
 const router = express.Router();
 
 // Validation rules
@@ -47,6 +73,83 @@ router.post('/login', login);
 router.post('/demo', createDemoAccount);
 router.get('/profile', auth, getProfile);
 router.put('/profile', auth, uploadResume.single('resume'), updateProfile);
+router.post('/upload-certificate', auth, uploadCertificate.single('certificate'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const User = require('../models/User');
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const certificateData = {
+      name: req.body.name || req.file.originalname,
+      fileUrl: `/uploads/certificates/${req.file.filename}`,
+      uploadedAt: new Date()
+    };
+
+    user.uploadedCertificates.push(certificateData);
+    await user.save();
+
+    res.json({
+      message: 'Certificate uploaded successfully',
+      certificate: certificateData
+    });
+  } catch (error) {
+    console.error('Certificate upload error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.delete('/certificate/:index', auth, async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const index = parseInt(req.params.index);
+    if (index < 0 || index >= user.uploadedCertificates.length) {
+      return res.status(400).json({ message: 'Invalid certificate index' });
+    }
+
+    user.uploadedCertificates.splice(index, 1);
+    await user.save();
+
+    res.json({ message: 'Certificate deleted successfully' });
+  } catch (error) {
+    console.error('Certificate delete error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/resume-data', auth, async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.resumeData = req.body.resumeData;
+    await user.save();
+
+    res.json({
+      message: 'Resume data saved successfully',
+      resumeData: user.resumeData
+    });
+  } catch (error) {
+    console.error('Resume data save error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // OAuth availability check
 router.get('/oauth/available', (req, res) => {

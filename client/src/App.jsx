@@ -15,13 +15,17 @@ import Internships from './components/Internships';
 import Community from './components/Community';
 import AdminPanel from './components/AdminPanel';
 import ResumeAnalyzer from './components/ResumeAnalyzer';
-import MockInterview from './components/MockInterview';
+import MockInterviewStart from './pages/mock-interview/Start';
+import MockInterviewRoom from './pages/mock-interview/Room';
+import MockInterviewResult from './pages/mock-interview/Result';
 import QuizHome from './components/QuizHome';
-import QuizArena from './components/QuizArena';
+import QuizArena from './pages/quiz/QuizArena';
 import Leaderboard from './components/Leaderboard';
+import CoursesPage from './pages/learning/CoursesPage';
 import Certificate from './components/Certificate';
 import ApiTest from './components/ApiTest';
 import ProfilePage from './components/ProfilePage';
+import ResumeBuilder from './components/ResumeBuilder';
 import AuthCallback from './components/AuthCallback';
 
 // Protected Route component
@@ -178,10 +182,26 @@ function App() {
               }
             />
             <Route
-              path="/mock-interview"
+              path="/mock-interview/start"
               element={
                 <ProtectedRoute>
-                  <MockInterview />
+                  <MockInterviewStart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mock-interview/room/:id"
+              element={
+                <ProtectedRoute>
+                  <MockInterviewRoom />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mock-interview/result/:id"
+              element={
+                <ProtectedRoute>
+                  <MockInterviewResult />
                 </ProtectedRoute>
               }
             />
@@ -210,6 +230,14 @@ function App() {
               }
             />
             <Route
+              path="/learning/courses"
+              element={
+                <ProtectedRoute>
+                  <CoursesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/quiz/leaderboard"
               element={
                 <ProtectedRoute>
@@ -230,6 +258,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resume-builder"
+              element={
+                <ProtectedRoute>
+                  <ResumeBuilder />
                 </ProtectedRoute>
               }
             />

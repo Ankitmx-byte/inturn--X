@@ -53,6 +53,16 @@ const progressSchema = new mongoose.Schema({
     maxScore: Number,
     completedAt: Date
   }],
+  type: {
+    type: String,
+    enum: ['course', 'quiz', 'project'],
+    default: 'course'
+  },
+  score: {
+    type: Number,
+    min: 0,
+    max: 100
+  },
   projectSubmitted: {
     type: Boolean,
     default: false

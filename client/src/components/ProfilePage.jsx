@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import axios from '../utils/axios';
 import BackButton from './BackButton';
 
@@ -257,7 +258,29 @@ export default function ProfilePage() {
               </div>
 
               <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
-                <h3 className="text-xl font-bold mb-6">Social Links</h3>
+              <h3 className="text-xl font-bold mb-6">Professional Links</h3>
+              
+              <div className="mb-6 p-4 bg-[#14A44D]/10 border border-[#14A44D]/30 rounded-xl">
+                <Link
+                  to="/resume-builder"
+                  className="flex items-center justify-between text-white hover:text-[#14A44D] transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <div>
+                      <p className="font-semibold">Resume Builder</p>
+                      <p className="text-sm text-gray-400">Create and manage your resume</p>
+                    </div>
+                  </div>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+
+              <h3 className="text-xl font-bold mb-6">Social Links</h3>
 
                 <div className="space-y-4">
                   <div>

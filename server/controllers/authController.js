@@ -129,9 +129,44 @@ const login = async (req, res) => {
 
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('completedCourses');
+    const user = await User.findById(req.user.id)
+      .populate('completedCourses')
+      .populate('certificates');
+    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Fetch additional statistics
+    const Project = require('../models/Project');
+    const Progress = require('../models/Progress');
+    
+    const [projects, quizResults, internshipApplications] = await Promise.all([
+      Project.find({ userId: user._id }),
+      Progress.find({ user: user._id, type: 'quiz' }),
+      // Assuming internship applications are stored somewhere
+      Promise.resolve([]) // Replace with actual query when internship model exists
+    ]);
+
+    // Calculate quiz score average
+    const quizScores = quizResults.filter(q => q.score !== undefined).map(q => q.score);
+    const averageQuizScore = quizScores.length > 0 
+      ? Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length)
+      : 0;
+
+    // Calculate learning streak
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastStreak = user.lastStreakDate ? new Date(user.lastStreakDate) : null;
+    
+    let streakDays = user.streakDays || 0;
+    if (lastStreak) {
+      lastStreak.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((today - lastStreak) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff > 1) {
+        streakDays = 0; // Streak broken
+      }
     }
 
     res.json({
@@ -144,7 +179,23 @@ const getProfile = async (req, res) => {
         badges: user.badges,
         skills: user.skills,
         completedCourses: user.completedCourses,
-        resumeLink: user.resumeLink
+        certificates: user.certificates,
+        uploadedCertificates: user.uploadedCertificates || [],
+        resumeLink: user.resumeLink,
+        resumeData: user.resumeData,
+        bio: user.bio,
+        github: user.github,
+        linkedin: user.linkedin,
+        portfolio: user.portfolio,
+        location: user.location,
+        // Dashboard statistics
+        projects: projects,
+        totalProjects: projects.length,
+        internshipApplications: internshipApplications,
+        quizScore: averageQuizScore,
+        battleWins: user.battleStats?.wins || 0,
+        streakDays: streakDays,
+        timeSpent: user.totalTimeSpent || 0
       }
     });
   } catch (error) {
@@ -167,7 +218,8 @@ const updateProfile = async (req, res) => {
       linkedin,
       portfolio,
       location,
-      role
+      role,
+      lastActive: new Date()
     };
 
     if (req.file) {
@@ -178,7 +230,7 @@ const updateProfile = async (req, res) => {
       userId,
       updateData,
       { new: true }
-    );
+    ).populate('completedCourses').populate('certificates');
 
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
@@ -197,7 +249,11 @@ const updateProfile = async (req, res) => {
         linkedin: updatedUser.linkedin,
         portfolio: updatedUser.portfolio,
         location: updatedUser.location,
-        resumeLink: updatedUser.resumeLink
+        resumeLink: updatedUser.resumeLink,
+        uploadedCertificates: updatedUser.uploadedCertificates || [],
+        resumeData: updatedUser.resumeData,
+        completedCourses: updatedUser.completedCourses,
+        certificates: updatedUser.certificates
       }
     });
   } catch (error) {

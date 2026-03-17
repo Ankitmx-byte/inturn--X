@@ -21,6 +21,7 @@ const QUIZ_BANK = {
         tags: ['basics', 'types'],
         explanation: 'In JavaScript, typeof null returns "object" due to a historical bug in the language that remains for backward compatibility.',
         codeExample: 'console.log(typeof null); // "object"',
+        testCases: [] // MCQ doesn't need test cases
       },
       {
         id: 'js-1-2',
@@ -31,6 +32,7 @@ const QUIZ_BANK = {
         tags: ['json', 'basics'],
         explanation: 'Use JSON.parse to parse a JSON string into an object. JSON.stringify does the inverse (object -> string).',
         codeExample: 'const obj = JSON.parse("{\\"a\\":1}");',
+        testCases: []
       },
       {
         id: 'js-1-3',
@@ -40,7 +42,8 @@ const QUIZ_BANK = {
         answerIndex: 1,
         tags: ['arrays', 'syntax'],
         explanation: 'The spread operator spreads elements into a new array, creating a shallow copy (nested objects are still by reference).',
-        codeExample: 'const a = [1,2]; const b = [...a, 3]; // b = [1,2,3]'
+        codeExample: 'const a = [1,2]; const b = [...a, 3]; // b = [1,2,3]',
+        testCases: []
       },
     ],
     2: [
@@ -385,6 +388,84 @@ const QUIZ_BANK = {
 
 const MAX_LEVEL = 100;
 
+// Add sample coding questions with test cases for levels 61-100
+function addCodingQuestions() {
+  // JavaScript coding questions
+  if (!QUIZ_BANK.javascript[61]) {
+    QUIZ_BANK.javascript[61] = [{
+      id: 'js-61-1',
+      type: 'short_code',
+      question: 'Write a function that returns the sum of two numbers.',
+      description: 'Create a function named "sum" that takes two parameters and returns their sum.',
+      tags: ['functions', 'basics'],
+      explanation: 'A simple function that adds two numbers together.',
+      codeExample: 'function sum(a, b) {\n  return a + b;\n}',
+      testCases: [
+        { input: '5\n3', expectedOutput: '8' },
+        { input: '10\n20', expectedOutput: '30' },
+        { input: '-5\n5', expectedOutput: '0' }
+      ]
+    }];
+  }
+
+  if (!QUIZ_BANK.javascript[86]) {
+    QUIZ_BANK.javascript[86] = [{
+      id: 'js-86-1',
+      type: 'full_problem',
+      question: 'Implement a function to reverse a string.',
+      description: 'Write a function that takes a string as input and returns the reversed string.',
+      constraints: ['Input string length: 1 ≤ n ≤ 1000'],
+      tags: ['strings', 'algorithms'],
+      explanation: 'You can reverse a string using various methods like split-reverse-join or iteration.',
+      codeExample: 'function reverseString(str) {\n  return str.split("").reverse().join("");\n}',
+      testCases: [
+        { input: 'hello', expectedOutput: 'olleh' },
+        { input: 'world', expectedOutput: 'dlrow' },
+        { input: 'a', expectedOutput: 'a' }
+      ]
+    }];
+  }
+
+  // Python coding questions
+  if (!QUIZ_BANK.python[61]) {
+    QUIZ_BANK.python[61] = [{
+      id: 'py-61-1',
+      type: 'short_code',
+      question: 'Write a function that returns the sum of two numbers.',
+      description: 'Create a function named "sum" that takes two parameters and returns their sum.',
+      tags: ['functions', 'basics'],
+      explanation: 'A simple function that adds two numbers together.',
+      codeExample: 'def sum(a, b):\n    return a + b',
+      testCases: [
+        { input: '5\n3', expectedOutput: '8' },
+        { input: '10\n20', expectedOutput: '30' },
+        { input: '-5\n5', expectedOutput: '0' }
+      ]
+    }];
+  }
+
+  if (!QUIZ_BANK.python[86]) {
+    QUIZ_BANK.python[86] = [{
+      id: 'py-86-1',
+      type: 'full_problem',
+      question: 'Implement a function to reverse a string.',
+      description: 'Write a function that takes a string as input and returns the reversed string.',
+      constraints: ['Input string length: 1 ≤ n ≤ 1000'],
+      tags: ['strings', 'algorithms'],
+      explanation: 'You can reverse a string using slicing or other methods.',
+      codeExample: 'def reverse_string(s):\n    return s[::-1]',
+      testCases: [
+        { input: 'hello', expectedOutput: 'olleh' },
+        { input: 'world', expectedOutput: 'dlrow' },
+        { input: 'a', expectedOutput: 'a' }
+      ]
+    }];
+  }
+}
+
+// Call this to add coding questions
+addCodingQuestions();
+
 // Dynamic question generation for missing levels
 function generateQuestionForLevel(language, level) {
   const baseQuestions = {
@@ -481,19 +562,46 @@ function getLevelsForLanguage(lang) {
 
 // Function to get questions for a level, with dynamic generation fallback
 function getQuestionsForLevel(language, level) {
+  // First check if we have predefined questions for this level
   if (QUIZ_BANK[language] && QUIZ_BANK[language][level]) {
     return QUIZ_BANK[language][level];
   }
 
   // Generate dynamic questions for missing levels
   const generated = [];
-  for (let i = 0; i < 5; i++) { // Generate 5 questions per level
+  for (let i = 0; i < 3; i++) { // Generate 3 questions per level
     const q = generateQuestionForLevel(language, level);
     if (q) generated.push(q);
   }
 
-  return generated.length > 0 ? generated : null;
+  // Cache the generated questions so they remain consistent
+  if (generated.length > 0) {
+    if (!QUIZ_BANK[language]) {
+      QUIZ_BANK[language] = {};
+    }
+    QUIZ_BANK[language][level] = generated;
+    return generated;
+  }
+
+  return null;
 }
+
+// Pre-generate questions for all levels 3-100 to ensure consistency
+function initializeAllLevels() {
+  LANGUAGES.forEach(lang => {
+    for (let level = 3; level <= 100; level++) {
+      // Skip levels that already have questions
+      if (QUIZ_BANK[lang.key] && QUIZ_BANK[lang.key][level]) {
+        continue;
+      }
+      // Generate questions for this level
+      getQuestionsForLevel(lang.key, level);
+    }
+  });
+}
+
+// Initialize all levels on startup
+initializeAllLevels();
 
 module.exports = {
   LANGUAGES,

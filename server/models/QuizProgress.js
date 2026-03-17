@@ -43,9 +43,8 @@ const quizProgressSchema = new mongoose.Schema({
     default: 0
   },
   lifelinesUsed: {
-    fiftyFifty: { type: Number, default: 0 },
-    hint: { type: Number, default: 0 },
-    skip: { type: Number, default: 0 }
+    fifty_fifty: { type: Number, default: 0 },
+    swap_question: { type: Number, default: 0 }
   },
   coins: {
     type: Number,

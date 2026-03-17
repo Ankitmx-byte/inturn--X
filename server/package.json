@@ -23,6 +23,7 @@
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "passport-linkedin-oauth2": "^2.0.0",
+    "puppeteer": "^24.31.0",
     "simple-git": "^3.22.0",
     "socket.io": "^4.7.2",
     "unzipper": "^0.10.14"
